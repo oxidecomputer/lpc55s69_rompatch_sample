@@ -41,9 +41,6 @@ void blink_red(void)
 void blink_blue(void)
 {
 	volatile int *gpio = (volatile int *)0x5008c000;
-	volatile int *cpuid = (volatile int *)0xE000ED00;
-
-	int my_id = *cpuid;
 
 	while (1) {
 
@@ -215,7 +212,7 @@ int main()
 	stack_frame->r12 = 0;
 	stack_frame->lr = 0xffffffff;
 	stack_frame->pc = ((int)user) | 1; // Where to return plus set thmb
-	stack_frame->xpsr = 1 << 24;
+	stack_frame->xpsr = 1 << 24; // Enable thumb mode
 
 	stack_frame->fpu[0] = 0;
 	stack_frame->fpu[1] = 0;
