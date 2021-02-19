@@ -1,7 +1,7 @@
 # How to build
 
 ```shell
-apt-get install arm-none-eabi-gcc
+apt-get install gcc-arm-none-eabi
 
 git clone -b TF-Mv1.2.0 https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
 git clone -b tfm_poc git@github.com:oxidecomputer/lpc55s69_rompatch_sample
