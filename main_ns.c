@@ -78,7 +78,13 @@ __attribute__((noreturn))
 void touch_flash_api(void *argument) {
     UNUSED_VARIABLE(argument);
 
+    volatile uint32_t *scb_cpuid = (volatile uint32_t*)0xe000ed00;
+    volatile uint32_t *scb_cpuid_ns = (volatile uint32_t*)0xe002ed00;
+
     LOG_MSG("[TOUCH FLASH API] Started\r\n");
+
+    LOG_MSG("[TOUCH FLASH API] CPUID: %x\r\n", *scb_cpuid);
+    LOG_MSG("[TOUCH FLASH API] CPUID_NS: %x\r\n", *scb_cpuid_ns);
 
     psa_status_t err;
     struct psa_storage_info_t info;
