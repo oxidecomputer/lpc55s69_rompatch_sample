@@ -134,9 +134,9 @@ void lpc55_poc(void *argument) {
     LOG_MSG("[LPC55 PoC] Starting rom patch\r\n");
 
     osDelay(osKernelGetTickFreq() * 5);
-    uint32_t *ctrl_addr = (uint32_t *)0x4003e0f4;
-    uint32_t *addr_reg = (uint32_t *)0x4003e100;
-    uint32_t *insn_reg = (uint32_t *)0x4003e0d4;
+    volatile uint32_t *ctrl_addr = (volatile uint32_t *)0x4003e0f4;
+    volatile uint32_t *addr_reg = (volatile uint32_t *)0x4003e100;
+    volatile uint32_t *insn_reg = (volatile uint32_t *)0x4003e0d4;
 
 	// Turn off patcher
 	*ctrl_addr = 0x20000000;
