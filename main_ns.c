@@ -145,8 +145,8 @@ const uint32_t constant_pool[] = {
     0x00000000,  // SAU Region
     0x00000000,  // SAU Region Base Address
     0x500ACFF8,  // Secure AHB MISC_CTRL_DP_REG
-    0x00002222,  // Value for MISC_CTRL_DP_REG
-    0x00002222,  // Value for MISC_CTRL_REG
+    0x0000AAAA,  // Value for MISC_CTRL_DP_REG
+    0x0000AAAA,  // Value for MISC_CTRL_REG
 };
 
 __attribute__((noreturn))
@@ -187,7 +187,8 @@ void lpc55_poc(void *argument) {
 
     LOG_MSG("[LPC55 PoC] Finished ROM patch\r\n");
 
-    LOG_MSG("[LPC55 PoC] Start of Secure Code:r\n");
+    osDelay(osKernelGetTickFreq() * 10);
+    LOG_MSG("[LPC55 PoC] Start of Secure Code:\r\n");
     const uint8_t *secure_code = (const uint8_t *)0x0;
 
     for (ii = 0; ii < 256; ii += 16) {
