@@ -74,11 +74,40 @@ NS DATA Limit: 0x20043FFF
 Booting TFM v1.2.0
 [Crypto] MBEDTLS_TEST_NULL_ENTROPY is not suitable for production!
 LPC55 ROM Patch PoC starting as non-secure app...
-[TOUCH FLASH API] Started
-[TOUCH FLASH API] Counter: 89
-[TOUCH FLASH API] Counter: 90
-[TOUCH FLASH API] Counter: 91
-[TOUCH FLASH API] Counter: 92
-[LPC55 PoC] Started
-[TOUCH FLASH API] Counter: 93
+[TOUCH FLASH API] Started[LPC55
+PoC] Good morning from this thread
+[TOUCH FLASH API] Counter: 0
+[TOUCH FLASH API] Counter: 1
+[TOUCH FLASH API] Counter: 2
+[TOUCH FLASH API] Counter: 3
+[LPC55 PoC] Starting rom patch
+[LPC55 PoC] Finished ROM patch
+[TOUCH FLASH API] Counter: 4
+[TOUCH FLASH API] Counter: 5
+[TOUCH FLASH API] Counter: 6
+[TOUCH FLASH API] Counter: 7
+[TOUCH FLASH API] Counter: 8
+[TOUCH FLASH API] Counter: 9
+[TOUCH FLASH API] Counter: a
+[TOUCH FLASH API] Counter: b
+[TOUCH FLASH API] Counter: c
+[TOUCH FLASH API] Counter: d
+[LPC55 PoC] Start of Secure Code:
+[LPC55 PoC] 0x0:        0       8       0       30      31      1       0       10      9d      1       0       10      31      ab      0     0
+[LPC55 PoC] 0x10:       35      ab      0       10      39      ab      0       10      99      1       0       10      3d      ab      0     0
+[LPC55 PoC] 0x20:       0       0       0       0       0       0       0       0       0       0       0       0       5       ab      0     0
+[LPC55 PoC] 0x30:       99      1       0       10      0       0       0       0       a9      1       0       10      ad      1       0     0
+[LPC55 PoC] 0x40:       b1      1       0       10      b5      1       0       10      b9      1       0       10      bd      1       0     0
+[LPC55 PoC] 0x50:       c1      1       0       10      c5      1       0       10      c9      1       0       10      cd      1       0     0
+[LPC55 PoC] 0x60:       d1      1       0       10      d5      1       0       10      d9      1       0       10      dd      1       0     0
+[LPC55 PoC] 0x70:       e1      1       0       10      e5      1       0       10      e9      1       0       10      ed      1       0     0
+[LPC55 PoC] 0x80:       f1      1       0       10      f5      1       0       10      f9      1       0       10      fd      1       0     0
+[LPC55 PoC] 0x90:       1       2       0       10      5       2       0       10      9       2       0       10      d       2       0     0
+[LPC55 PoC] 0xa0:       11      2       0       10      15      2       0       10      19      2       0       10      1d      2       0     0
+[LPC55 PoC] 0xb0:       21      2       0       10      25      2       0       10      29      2       0       10      2d      2       0     0
+[LPC55 PoC] 0xc0:       31      2       0       10      35      2       0       10      39      2       0       10      3d      2       0     0
+[LPC55 PoC] 0xd0:       41      2       0       10      45      2       0       10      49      2       0       10      4d      2       0     0
+[LPC55 PoC] 0xe0:       51      2       0       10      55      2       0       10      59      2       0       10      5d      2       0     0
+[LPC55 PoC] 0xf0:       61      2       0       10      65      2       0       10      69      2       0       10      6d      2       0     0
+[TOUCH FLASH API] Counter: e
 ```
