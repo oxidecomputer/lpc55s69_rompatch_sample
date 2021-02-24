@@ -1,4 +1,43 @@
-# How to build
+
+# LPC55S69 ROM Patch Privilege Escalation and Arbitrary Code Execution PoC
+
+This repository contains a TrustedFirmware-M non-secure app demonstrating that
+non-secure code can utilize the LPC55 ROM patch hardware to gain arbitrary code
+execution at secure, privileged mode. Non-secure, unprivileged arbitrary memory
+write capability is a prerequisite for this vulnerability.
+
+The PoC takes advantage of NXP's implementation of TrustedFirmware-M's Internal
+Trusted Storage (ITS) which performs flash operations using the LPC55 ROM's
+Flash API.  A thread is created which increments a counter stored via ITS.  This
+ensures that the Flash ROM API will be called on a regular basis.  In a real
+TrustedFirmware-M application, any exposed API that writes to flash can be used
+for the same purpose.
+
+A second thread is created to deploy the PoC from a non-secure context. The
+shellcode is first loaded into an unused portion of the ROM.  As the ROM patch
+appears to be size limited to 8 words (32 bytes), constants used by the shellcode
+are stored in non-secure memory and only a pointer to that non-secure memory is
+appended to the shellcode.  Finally, the Flash_Write ROM API method is modified
+to call the shellcode.
+
+The shellcode performs a series of memory writes as specified by the constants
+stored in non-secure memory.  The PoC provides constants that extend the SAU
+non-secure code and data regions to cover the entire non-secure aliases of the
+flash and SRAMs respectively. The Secure AHB controller is then reconfigured to
+a default state such that security checking is disabled.  Combined, this allows
+non-secure code to access all flash and SRAM contents including secure code and
+data sections.
+
+The PoC loader thread then waits for 10 seconds to ensure Flash_Write has been
+indirectly called via ITS and the shellcode has been executed.  The PoC loader
+thread then proceeds to read the first 256 bytes of the flash (containing the
+secure application's vector table which can be easily verified as pointing to
+secure addresses) via the non-secure alias starting at 0x0.  Had the shellcode
+not executed, attempting to read these locations would have resulted in a
+SecureFault or BusFault depending on whether the SAU or Secure AHB denied the
+request.
+
+## How to build
 
 ```shell
 apt-get install gcc-arm-none-eabi pipenv
