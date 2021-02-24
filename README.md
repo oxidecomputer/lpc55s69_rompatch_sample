@@ -1,7 +1,7 @@
 # How to build
 
 ```shell
-apt-get install gcc-arm-none-eabi
+apt-get install gcc-arm-none-eabi pipenv
 
 git clone -b TF-Mv1.2.0 https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
 git clone -b tfm_poc git@github.com:oxidecomputer/lpc55s69_rompatch_sample
@@ -39,10 +39,10 @@ Flash layout on LPC55S69 without BL2:
 ## How to flash using blhost
 
 * Connect USB cable to High Spd port (P9)
-* Hold ISP button while pressing and releasing Reset button
-* `./blhost -u 0x1fc9,0x0021 flash-erase-all`
-* `./blhost -u 0x1fc9,0x0021 write-memory 0x00000000 cmake_build/bin/tfm_s.bin`
-* `./blhost -u 0x1fc9,0x0021 write-memory 0x00040000 cmake_build/bin/tfm_ns.bin`
+* Hold ISP button while pressing and releasing Reset button to enter ISP mode
+* `blhost -u 0x1fc9,0x0021 flash-erase-all`
+* `blhost -u 0x1fc9,0x0021 write-memory 0x00000000 cmake_build/bin/tfm_s.bin`
+* `blhost -u 0x1fc9,0x0021 write-memory 0x00040000 cmake_build/bin/tfm_ns.bin`
 * Press and release Reset button
 
 NOTE: I've seen blhost fail often during this process.  Repeat the whole sequence until each step is successful.  Waiting a few seconds after flash-erase-all seems to help.
@@ -52,6 +52,8 @@ NOTE: I've seen blhost fail often during this process.  Repeat the whole sequenc
 Both secure and non-secure images write their output to USART0.  On-board LPC-Link2 provides this as a USB-ACM device.  Otherwise, attach 3.3v TTL serial cable to header P8.
 
 NOTE: Since the counter is written to flash, it is persisted across resets but will be cleared with `blhost flash-erase-all`.
+
+NOTE: After `blhost flash-erase-all`, the Internal Trusted Storage area is uninitialized which seems to cause a hang when creating the counter.  If you do not see constant output showing an increasing counter value, reset the device once.  If it still hangs after a reset, something is wrong.
 
 ```text
 === [SAU NS] =======
