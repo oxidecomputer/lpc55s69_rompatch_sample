@@ -43,14 +43,17 @@ request.
 apt-get install gcc-arm-none-eabi pipenv
 
 git clone -b TF-Mv1.2.0 https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
-git clone -b tfm_poc git@github.com:oxidecomputer/lpc55s69_rompatch_sample
+git clone git@github.com:oxidecomputer/lpc55s69_rompatch_sample
 
 cd trusted-firmware-m
+# Fix error in CMake config that treats TFM_TEST_REPO_VERSION as a path instead of # a string
+git cherry-pick   8501b37db8e038ce39eb7f1039a514edea92c96e
 pipenv shell
 pip install -r tools/requirements.txt
 pip install cmake
 
 cmake -S . -B cmake_build \
+  -DTFM_TEST_REPO_VERSION=TF-Mv1.2.0 \
   -DTFM_PLATFORM=nxp/lpcxpresso55s69 \
   -DTFM_TOOLCHAIN_FILE=toolchain_GNUARM.cmake \
   -DCMAKE_BUILD_TYPE=Release \
