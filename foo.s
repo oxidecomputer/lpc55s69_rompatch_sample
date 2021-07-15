@@ -1,22 +1,21 @@
 .syntax unified
 
-@ flash_program:
+Flash_Write:
 @ Arguments
 @ r0 - config
 @ r1 - start
 @ r2 - src
 @ r3 - len
-@
 
-@13007308    2d e9 f8 4f     push       { len, r4, r5, r6, r7, r8, r9, r10, r11, lr  }
-@1300730c    93 46           mov        r11,src
-@1300730e    98 46           mov        r8,len
-@13007310    82 46           mov        r10,config   @ At this point r2, r3, r4, r6, and r10 are all about to be overwritten
-@13007312    0e 46           mov        r6,start    
-@13007314    4f f4 00 73     mov.w      len,#0x200   
-@13007318    42 46           mov        src,r8
-@1300731a    01 24           mov        r4,#0x1
-@1300731c    00 f0 f4 f9     bl         validate_flash_alignment
+push       { len, r4, r5, r6, r7, r8, r9, r10, r11, lr  }
+mov        r11,src
+mov        r8,len
+mov        r10,config   @ At this point r2, r3, r4, r6, and r10 are all about to be overwritten
+mov        r6,start    
+mov.w      len,#0x200   
+mov        src,r8
+mov        r4,#0x1
+bl         validate_flash_alignment
 
 nop
 .align 8
@@ -71,7 +70,7 @@ nop
 nop
 
 
-flash_program:
+Flash_Write:
 push { r3, r4, r5, r6, r7, r8, r9, r10, r11, lr }
 mov        r11,r2
 mov        r8,r3
@@ -88,5 +87,5 @@ nonsecure_constants_pool:
 .word 0x0
 .word 0x0
 .word 0x500ACFF8    @ Secure AHB MISC_CTRL_DP_REG
-.word 0x00002222    @ Value for same
-.word 0x00002222    @ Value for same
+.word 0x0000AAAA    @ Value for same
+.word 0x0000AAAA    @ Value for same
