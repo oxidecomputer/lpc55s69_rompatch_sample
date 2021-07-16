@@ -43,7 +43,7 @@ request.
 apt-get install gcc-arm-none-eabi pipenv
 
 git clone -b TF-Mv1.2.0 https://git.trustedfirmware.org/TF-M/trusted-firmware-m.git
-git clone git@github.com:oxidecomputer/lpc55s69_rompatch_sample
+git clone https://github.com/oxidecomputer/lpc55s69_rompatch_sample.git
 
 cd trusted-firmware-m
 # Fix error in CMake config that treats TFM_TEST_REPO_VERSION as a path instead of # a string
